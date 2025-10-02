@@ -1,5 +1,12 @@
 // Middleware to check if user is authenticated
 export const requireAuth = (req, res, next) => {
+  console.log('🔐 Auth check:', {
+    hasSession: !!req.session,
+    hasUserId: !!req.session?.userId,
+    sessionId: req.sessionID,
+    cookies: req.headers.cookie
+  });
+
   if (!req.session || !req.session.userId) {
     return res.status(401).json({
       success: false,
