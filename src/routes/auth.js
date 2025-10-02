@@ -39,9 +39,17 @@ router.post('/login', async (req, res) => {
       emailVerified: user.emailVerified
     };
 
-    res.json({
-      success: true,
-      user: req.session.user
+    // Save session before sending response
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ success: false, message: 'Session creation failed' });
+      }
+
+      res.json({
+        success: true,
+        user: req.session.user
+      });
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -85,7 +93,13 @@ router.post('/social-login', async (req, res) => {
       emailVerified: user.emailVerified
     };
 
-    res.json({ success: true, user: req.session.user });
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ success: false, message: 'Session creation failed' });
+      }
+      res.json({ success: true, user: req.session.user });
+    });
   } catch (error) {
     console.error('Social login error:', error);
     res.status(500).json({ success: false, message: 'Social login failed' });
@@ -111,14 +125,20 @@ router.post('/passkey', async (req, res) => {
       role: user.role
     };
 
-    res.json({
-      success: true,
-      user: {
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ success: false, message: 'Session creation failed' });
       }
+      res.json({
+        success: true,
+        user: {
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role
+        }
+      });
     });
   } catch (error) {
     console.error('Passkey login error:', error);
