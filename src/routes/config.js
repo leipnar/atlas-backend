@@ -5,8 +5,6 @@ import { requireAuth, checkPermission } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.use(requireAuth);
-
 // Helper function to get or create config
 const getOrCreateConfig = async (configType, defaultData) => {
   let config = await Config.findOne({ configType });
@@ -16,6 +14,49 @@ const getOrCreateConfig = async (configType, defaultData) => {
   }
   return config;
 };
+
+// PUBLIC ROUTES (no authentication required)
+
+// GET /api/config/company (public - needed for landing page)
+router.get('/company', async (req, res) => {
+  try {
+    const config = await getOrCreateConfig('companyInfo', {
+      logo: null,
+      en: { name: 'Atlas Corp.', about: 'Welcome to the Atlas AI Assistant.' },
+      fa: { name: 'شرکت اطلس', about: 'به دستیار هوش مصنوعی اطلس خوش آمدید.' }
+    });
+    res.json(config.data);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch company info' });
+  }
+});
+
+// GET /api/config/panel (public - needed for landing page)
+router.get('/panel', async (req, res) => {
+  try {
+    const config = await getOrCreateConfig('panelConfig', {
+      aiNameEn: 'Atlas',
+      aiNameFa: 'اطلس',
+      chatHeaderTitleEn: 'Conversation with Atlas',
+      chatHeaderTitleFa: 'گفتگو با اطلس',
+      chatPlaceholderEn: 'Type your message here...',
+      chatPlaceholderFa: 'پیام خود را اینجا بنویسید...',
+      welcomeMessageEn: 'Hello! How can I help you today?',
+      welcomeMessageFa: 'سلام! چطور می‌توانم امروز به شما کمک کنم؟',
+      aiAvatar: null,
+      privacyPolicyEn: 'This is the default Privacy Policy.',
+      privacyPolicyFa: 'این متن پیش‌فرض سیاست حفظ حریم خصوصی است.',
+      termsOfServiceEn: 'These are the default Terms of Service.',
+      termsOfServiceFa: 'این متن پیش‌فرض شرایط خدمات است.'
+    });
+    res.json(config.data);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch panel config' });
+  }
+});
+
+// PROTECTED ROUTES (authentication required)
+router.use(requireAuth);
 
 // GET /api/config/permissions
 router.get('/permissions', async (req, res) => {
@@ -82,20 +123,6 @@ router.put('/model', checkPermission('canEditModelConfig'), async (req, res) => 
   }
 });
 
-// GET /api/config/company
-router.get('/company', checkPermission('canViewCompanySettings'), async (req, res) => {
-  try {
-    const config = await getOrCreateConfig('companyInfo', {
-      logo: null,
-      en: { name: 'Atlas Corp.', about: 'Welcome to the Atlas AI Assistant.' },
-      fa: { name: 'شرکت اطلس', about: 'به دستیار هوش مصنوعی اطلس خوش آمدید.' }
-    });
-    res.json(config.data);
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to fetch company info' });
-  }
-});
-
 // PUT /api/config/company
 router.put('/company', checkPermission('canEditCompanySettings'), async (req, res) => {
   try {
@@ -109,30 +136,6 @@ router.put('/company', checkPermission('canEditCompanySettings'), async (req, re
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to update company info' });
-  }
-});
-
-// GET /api/config/panel
-router.get('/panel', async (req, res) => {
-  try {
-    const config = await getOrCreateConfig('panelConfig', {
-      aiNameEn: 'Atlas',
-      aiNameFa: 'اطلس',
-      chatHeaderTitleEn: 'Conversation with Atlas',
-      chatHeaderTitleFa: 'گفتگو با اطلس',
-      chatPlaceholderEn: 'Type your message here...',
-      chatPlaceholderFa: 'پیام خود را اینجا بنویسید...',
-      welcomeMessageEn: 'Hello! How can I help you today?',
-      welcomeMessageFa: 'سلام! چطور می‌توانم امروز به شما کمک کنم؟',
-      aiAvatar: null,
-      privacyPolicyEn: 'This is the default Privacy Policy.',
-      privacyPolicyFa: 'این متن پیش‌فرض سیاست حفظ حریم خصوصی است.',
-      termsOfServiceEn: 'These are the default Terms of Service.',
-      termsOfServiceFa: 'این متن پیش‌فرض شرایط خدمات است.'
-    });
-    res.json(config.data);
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to fetch panel config' });
   }
 });
 
