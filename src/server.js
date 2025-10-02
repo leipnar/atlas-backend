@@ -32,6 +32,9 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/atlas-ai'
     process.exit(1);
   });
 
+// Trust proxy - required for secure cookies behind Nginx/Cloudflare
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(helmet());
 app.use(cors({
